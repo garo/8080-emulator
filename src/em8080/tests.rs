@@ -179,6 +179,147 @@ fn test_mvi() {
     // MVI M writes value 03 to memory location specified by H,L
     run_op(&mut sys, "3603");
     assert_eq!(sys.memory[0x0102], 0x03);
+}
+
+#[test]
+fn test_mov() {
+    let mut sys = Em8080::new();
+
+    sys.b = 1;
+    run_op(&mut sys, "40"); // MOV B, B
+    assert_eq!(sys.b, 0x01);
+
+    sys.c = 2;
+    run_op(&mut sys, "41"); // MOV B, C
+    assert_eq!(sys.b, 0x02);
+
+    sys.d = 3;
+    run_op(&mut sys, "42"); // MOV B, D
+    assert_eq!(sys.b, 0x03);
+
+    sys.e = 4;
+    run_op(&mut sys, "43"); // MOV B, E
+    assert_eq!(sys.b, 0x04);
+
+    sys.h = 5;
+    run_op(&mut sys, "44"); // MOV B, H
+    assert_eq!(sys.b, 0x05);
+
+    sys.l = 6;
+    run_op(&mut sys, "45"); // MOV B, L
+    assert_eq!(sys.b, 0x06);
+
+    sys.memory[0x0506] = 0xAA;
+    run_op(&mut sys, "46"); // MOV B, M
+    assert_eq!(sys.b, 0xAA);
+
+    sys.a = 7;
+    run_op(&mut sys, "47"); // MOV B, A
+    assert_eq!(sys.b, 0x07);
+
+
+
+    sys.b = 1;
+    run_op(&mut sys, "48"); // MOV C, B
+    assert_eq!(sys.c, 0x01);
+
+    sys.c = 2;
+    run_op(&mut sys, "49"); // MOV C, C
+    assert_eq!(sys.c, 0x02);
+
+    sys.d = 3;
+    run_op(&mut sys, "4A"); // MOV C, D
+    assert_eq!(sys.c, 0x03);
+
+    sys.e = 4;
+    run_op(&mut sys, "4B"); // MOV C, E
+    assert_eq!(sys.c, 0x04);
+
+    sys.h = 5;
+    run_op(&mut sys, "4C"); // MOV C, H
+    assert_eq!(sys.c, 0x05);
+
+    sys.l = 6;
+    run_op(&mut sys, "4D"); // MOV C, L
+    assert_eq!(sys.c, 0x06);
+
+    sys.memory[0x0506] = 0xAA;
+    run_op(&mut sys, "4E"); // MOV C, M
+    assert_eq!(sys.c, 0xAA);
+
+    sys.a = 7;
+    run_op(&mut sys, "4F"); // MOV C, A
+    assert_eq!(sys.c, 0x07);    
+
+
+    // ROW 2
+
+    sys.b = 1;
+    run_op(&mut sys, "50"); // MOV D, B
+    assert_eq!(sys.d, 0x01);
+
+    sys.c = 2;
+    run_op(&mut sys, "51"); // MOV D, C
+    assert_eq!(sys.d, 0x02);
+
+    sys.d = 3;
+    run_op(&mut sys, "52"); // MOV D, D
+    assert_eq!(sys.d, 0x03);
+
+    sys.e = 4;
+    run_op(&mut sys, "53"); // MOV D, E
+    assert_eq!(sys.d, 0x04);
+
+    sys.h = 5;
+    run_op(&mut sys, "54"); // MOV D, H
+    assert_eq!(sys.d, 0x05);
+
+    sys.l = 6;
+    run_op(&mut sys, "55"); // MOV D, L
+    assert_eq!(sys.d, 0x06);
+
+    sys.memory[0x0506] = 0xAA;
+    run_op(&mut sys, "56"); // MOV D, M
+    assert_eq!(sys.d, 0xAA);
+
+    sys.a = 7;
+    run_op(&mut sys, "57"); // MOV D, A
+    assert_eq!(sys.d, 0x07);
+
+
+
+    sys.b = 1;
+    run_op(&mut sys, "58"); // MOV E, B
+    assert_eq!(sys.e, 0x01);
+
+    sys.c = 2;
+    run_op(&mut sys, "59"); // MOV E, C
+    assert_eq!(sys.e, 0x02);
+
+    sys.d = 3;
+    run_op(&mut sys, "5A"); // MOV E, D
+    assert_eq!(sys.e, 0x03);
+
+    sys.e = 4;
+    run_op(&mut sys, "5B"); // MOV E, E
+    assert_eq!(sys.e, 0x04);
+
+    sys.h = 5;
+    run_op(&mut sys, "5C"); // MOV E, H
+    assert_eq!(sys.e, 0x05);
+
+    sys.l = 6;
+    run_op(&mut sys, "5D"); // MOV E, L
+    assert_eq!(sys.e, 0x06);
+
+    sys.memory[0x0506] = 0xAA;
+    run_op(&mut sys, "5E"); // MOV E, M
+    assert_eq!(sys.e, 0xAA);
+
+    sys.a = 7;
+    run_op(&mut sys, "5F"); // MOV E, A
+    assert_eq!(sys.e, 0x07);    
+
 
 
 }

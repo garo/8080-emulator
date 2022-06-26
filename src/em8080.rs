@@ -138,8 +138,169 @@ impl Em8080 {
                 self.write_byte(self.get_hl(), self.read_next_byte());
                 (2, 7)
             },
-
             
+            // MOV
+            0x40 => { // MOV B, B
+                self.b = self.b;
+                (1, 5)
+            },
+
+            0x41 => { // MOV B, C
+                self.b = self.c;
+                (1, 5)
+            },
+
+            0x42 => { // MOV B, D
+                self.b = self.d;
+                (1, 5)
+            },
+
+            0x43 => { // MOV B, E
+                self.b = self.e;
+                (1, 5)
+            },
+
+            0x44 => { // MOV B, H
+                self.b = self.h;
+                (1, 5)
+            },
+
+            0x45 => { // MOV B, L
+                self.b = self.l;
+                (1, 5)
+            },
+
+            0x46 => { // MOV B, M
+                self.b = self.get_m();
+                (1, 5)
+            },
+
+            0x47 => { // MOV B, A
+                self.b = self.a;
+                (1, 5)
+            },
+
+            0x48 => { // MOV C, B
+                self.c = self.b;
+                (1, 5)
+            },
+
+            0x49 => { // MOV C, C
+                self.c = self.c;
+                (1, 5)
+            },
+
+            0x4A => { // MOV C, D
+                self.c = self.d;
+                (1, 5)
+            },
+
+            0x4B => { // MOV C, E
+                self.c = self.e;
+                (1, 5)
+            },
+
+            0x4C => { // MOV C, H
+                self.c = self.h;
+                (1, 5)
+            },
+
+            0x4D => { // MOV C, L
+                self.c = self.l;
+                (1, 5)
+            },
+
+            0x4E => { // MOV C, M
+                self.c = self.get_m();
+                (1, 5)
+            },
+
+            0x4F => { // MOV C, A
+                self.c = self.a;
+                (1, 5)
+            },
+
+            // MOV, ROW 2
+
+            0x50 => { // MOV D, B
+                self.d = self.b;
+                (1, 5)
+            },
+
+            0x51 => { // MOV D, C
+                self.d = self.c;
+                (1, 5)
+            },
+
+            0x52 => { // MOV D, D
+                self.d = self.d;
+                (1, 5)
+            },
+
+            0x53 => { // MOV D, E
+                self.d = self.e;
+                (1, 5)
+            },
+
+            0x54 => { // MOV D, H
+                self.d = self.h;
+                (1, 5)
+            },
+
+            0x55 => { // MOV D, L
+                self.d = self.l;
+                (1, 5)
+            },
+
+            0x56 => { // MOV D, M
+                self.d = self.get_m();
+                (1, 5)
+            },
+
+            0x57 => { // MOV D, A
+                self.d = self.a;
+                (1, 5)
+            },
+
+            0x58 => { // MOV E, B
+                self.e = self.b;
+                (1, 5)
+            },
+
+            0x59 => { // MOV E, C
+                self.e = self.c;
+                (1, 5)
+            },
+
+            0x5A => { // MOV E, D
+                self.e = self.d;
+                (1, 5)
+            },
+
+            0x5B => { // MOV E, E
+                self.e = self.e;
+                (1, 5)
+            },
+
+            0x5C => { // MOV E, H
+                self.e = self.h;
+                (1, 5)
+            },
+
+            0x5D => { // MOV E, L
+                self.e = self.l;
+                (1, 5)
+            },
+
+            0x5E => { // MOV E, M
+                self.e = self.get_m();
+                (1, 5)
+            },
+
+            0x5F => { // MOV E, A
+                self.e = self.a;
+                (1, 5)
+            },
 
             // Unimplemented
             _ => {
@@ -212,6 +373,10 @@ impl Em8080 {
 
     fn get_hl(&self) -> u16 {
         (self.h as u16) << 8 | (self.l as u16)
+    }
+
+    fn get_m(&self) -> u8 {
+        self.read_byte(self.get_hl())
     }
 
     fn next_opcode(&self) -> String {
