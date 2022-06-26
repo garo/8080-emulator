@@ -1,6 +1,6 @@
+use std::{num::ParseIntError};
 
 use crate::em8080::Em8080;
-
 
 #[test]
 fn it_works() {
@@ -78,7 +78,7 @@ fn test_nop() {
 }
 
 #[test]
-fn test_LXI() {
+fn test_lxi() {
     let mut sys = Em8080::new();
 
     // LXI B, 0xAABB
@@ -128,5 +128,53 @@ fn test_LXI() {
     assert_eq!(sys.h, 0x01);
     assert_eq!(sys.l, 0x02);
     assert_eq!(sys.sp, 0x1234);
+}
+
+// Takes a string such as "AABB" and returns Vec with AA and BB
+pub fn decode_hex(s: &str) -> Result<Vec<u8>, ParseIntError> {
+    (0..s.len())
+        .step_by(2)
+        .map(|i| u8::from_str_radix(&s[i..i + 2], 16))
+        .collect()
+}
+
+// Runs a single operation passed as a string of opcodes
+fn run_op(sys : &mut Em8080, command : &str) -> u64{
+
+    let result = decode_hex(command).unwrap();
+
+    for (i, x) in result.iter().enumerate() {
+        sys.memory[i as usize] = *x;
+    }
+    sys.pc = 0;
+
+    sys.emulate()
+}
+
+#[test]
+fn test_mvi() {
+    let mut sys = Em8080::new();
+
+    run_op(&mut sys, "3EAA");
+    assert_eq!(sys.a, 0xAA);
+
+    run_op(&mut sys, "06BB");
+    assert_eq!(sys.b, 0xBB);
+
+    run_op(&mut sys, "0ECC");
+    assert_eq!(sys.c, 0xCC);
+
+    run_op(&mut sys, "16DD");
+    assert_eq!(sys.d, 0xDD);
+
+    run_op(&mut sys, "1EEE");
+    assert_eq!(sys.e, 0xEE);
+
+    run_op(&mut sys, "2601");
+    assert_eq!(sys.h, 0x01);
+
+    run_op(&mut sys, "2E02");
+    assert_eq!(sys.l, 0x02);
+
 }
 

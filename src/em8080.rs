@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::{self, fmt, process};
+use std::{self, fmt};
 
 #[cfg(test)]
 mod tests;
@@ -80,6 +80,7 @@ impl Em8080 {
             // NOP
             0x00 | 0x20 => (1, 4),
 
+            // LXI
             0x01 => { // LXI B
                 self.set_bc(self.read_next_word());
                 (3, 10)
@@ -96,13 +97,44 @@ impl Em8080 {
                 self.sp = self.read_next_word();
                 (3, 10)
             },
-            /*
-            // LXI B, D16
-            0x01 => {
-                *self.bc_mut() = self.read_bytes_immediate();
-                (3, 10)
-            }
-            */
+
+            // MVI
+            0x3E => { // MVI A, d8
+                self.a = self.read_next_byte();
+                (2, 7)
+            },
+            
+            0x06 => { // MVI B, d8
+                self.b = self.read_next_byte();
+                (2, 7)
+            },
+
+            0x0E => { // MVI C, d8
+                self.c = self.read_next_byte();
+                (2, 7)
+            },
+
+            0x16 => { // MVI D, d8
+                self.d = self.read_next_byte();
+                (2, 7)
+            },
+
+            0x1E => { // MVI E, d8
+                self.e = self.read_next_byte();
+                (2, 7)
+            },
+
+            0x26 => { // MVI H, d8
+                self.h = self.read_next_byte();
+                (2, 7)
+            },
+
+            0x2E => { // MVI L, d8
+                self.l = self.read_next_byte();
+                (2, 7)
+            },
+
+            
 
             // Unimplemented
             _ => {
@@ -134,6 +166,11 @@ impl Em8080 {
     // Reads next word from memory
     fn read_next_word(&self) -> u16 {
         self.read_word(self.pc + 1)
+    }
+
+    // Reads next word from memory
+    fn read_next_byte(&self) -> u8 {
+        self.read_byte(self.pc + 1)
     }
 
     fn write_byte(&mut self, address: u16, val: u8) {
