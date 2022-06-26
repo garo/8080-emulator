@@ -134,6 +134,11 @@ impl Em8080 {
                 (2, 7)
             },
 
+            0x36 => { // MVI M, d8
+                self.write_byte(self.get_hl(), self.read_next_byte());
+                (2, 7)
+            },
+
             
 
             // Unimplemented
