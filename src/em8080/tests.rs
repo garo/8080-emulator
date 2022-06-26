@@ -176,5 +176,10 @@ fn test_mvi() {
     run_op(&mut sys, "2E02");
     assert_eq!(sys.l, 0x02);
 
+    // MVI M writes value 03 to memory location specified by H,L
+    run_op(&mut sys, "3603");
+    assert_eq!(sys.memory[0x0102], 0x03);
+
+
 }
 
