@@ -302,6 +302,89 @@ impl Em8080 {
                 (1, 5)
             },
 
+            // MOV, Row 3
+
+            0x50 => { // MOV H, B
+                self.d = self.b;
+                (1, 5)
+            },
+
+            0x51 => { // MOV H, C
+                self.d = self.c;
+                (1, 5)
+            },
+
+            0x52 => { // MOV H, D
+                self.d = self.d;
+                (1, 5)
+            },
+
+            0x53 => { // MOV H, E
+                self.d = self.e;
+                (1, 5)
+            },
+
+            0x54 => { // MOV H, H
+                self.d = self.h;
+                (1, 5)
+            },
+
+            0x55 => { // MOV H, L
+                self.d = self.l;
+                (1, 5)
+            },
+
+            0x56 => { // MOV H, M
+                self.d = self.get_m();
+                (1, 5)
+            },
+
+            0x57 => { // MOV H, A
+                self.d = self.a;
+                (1, 5)
+            },
+
+            0x58 => { // MOV L, B
+                self.e = self.b;
+                (1, 5)
+            },
+
+            0x59 => { // MOV L, C
+                self.e = self.c;
+                (1, 5)
+            },
+
+            0x5A => { // MOV L, D
+                self.e = self.d;
+                (1, 5)
+            },
+
+            0x5B => { // MOV L, E
+                self.l = self.e;
+                (1, 5)
+            },
+
+            0x5C => { // MOV L, H
+                self.l = self.h;
+                (1, 5)
+            },
+
+            0x5D => { // MOV L, L
+                self.l = self.l;
+                (1, 5)
+            },
+
+            0x5E => { // MOV L, M
+                self.l = self.get_m();
+                (1, 5)
+            },
+
+            0x5F => { // MOV L, A
+                self.l = self.a;
+                (1, 5)
+            },
+
+
             // Unimplemented
             _ => {
                 println!(

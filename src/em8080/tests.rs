@@ -320,6 +320,73 @@ fn test_mov() {
     run_op(&mut sys, "5F"); // MOV E, A
     assert_eq!(sys.e, 0x07);    
 
+    // ROW 3
+
+    sys.b = 1;
+    run_op(&mut sys, "60"); // MOV H, B
+    assert_eq!(sys.h, 0x01);
+
+    sys.c = 2;
+    run_op(&mut sys, "61"); // MOV H, C
+    assert_eq!(sys.h, 0x02);
+
+    sys.d = 3;
+    run_op(&mut sys, "62"); // MOV H, D
+    assert_eq!(sys.h, 0x03);
+
+    sys.e = 4;
+    run_op(&mut sys, "63"); // MOV H, E
+    assert_eq!(sys.h, 0x04);
+
+    sys.h = 5;
+    run_op(&mut sys, "64"); // MOV H, H
+    assert_eq!(sys.h, 0x05);
+
+    sys.l = 6;
+    run_op(&mut sys, "65"); // MOV H, L
+    assert_eq!(sys.h, 0x06);
+
+    sys.memory[0x0506] = 0xAA;
+    run_op(&mut sys, "66"); // MOV H, M
+    assert_eq!(sys.h, 0xAA);
+
+    sys.a = 7;
+    run_op(&mut sys, "67"); // MOV H, A
+    assert_eq!(sys.h, 0x07);
+
+
+
+    sys.b = 1;
+    run_op(&mut sys, "68"); // MOV L, B
+    assert_eq!(sys.l, 0x01);
+
+    sys.c = 2;
+    run_op(&mut sys, "69"); // MOV L, C
+    assert_eq!(sys.l, 0x02);
+
+    sys.d = 3;
+    run_op(&mut sys, "6A"); // MOV L, D
+    assert_eq!(sys.l, 0x03);
+
+    sys.e = 4;
+    run_op(&mut sys, "6B"); // MOV L, E
+    assert_eq!(sys.l, 0x04);
+
+    sys.h = 5;
+    run_op(&mut sys, "6C"); // MOV L, H
+    assert_eq!(sys.l, 0x05);
+
+    sys.l = 6;
+    run_op(&mut sys, "6D"); // MOV L, L
+    assert_eq!(sys.l, 0x06);
+
+    sys.memory[0x0506] = 0xAA;
+    run_op(&mut sys, "6E"); // MOV L, M
+    assert_eq!(sys.l, 0xAA);
+
+    sys.a = 7;
+    run_op(&mut sys, "6F"); // MOV L, A
+    assert_eq!(sys.l, 0x07);    
 
 
 }
