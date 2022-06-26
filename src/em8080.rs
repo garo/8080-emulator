@@ -17,6 +17,8 @@ pub struct Em8080 {
     c: u8,
     d: u8,
     e: u8,
+    h: u8,
+    l: u8,
 
     sp: u16,
     pc: u16,
@@ -32,6 +34,8 @@ impl std::default::Default for Em8080 {
             c: 0,
             d: 0,
             e: 0,
+            h: 0,
+            l: 0,
             sp: 0,
             pc: 0,
 
@@ -82,6 +86,14 @@ impl Em8080 {
             },
             0x11 => { // LXI D
                 self.set_de(self.read_next_word());
+                (3, 10)
+            },
+            0x21 => { // LXI H
+                self.set_hl(self.read_next_word());
+                (3, 10)
+            },
+            0x31 => { // LXI SP
+                self.sp = self.read_next_word();
                 (3, 10)
             },
             /*
@@ -143,12 +155,21 @@ impl Em8080 {
         self.e = (value & 0xFF) as u8;
     }
 
+    fn set_hl(&mut self, value: u16) {
+        self.h = (value >> 8) as u8;
+        self.l = (value & 0xFF) as u8;
+    }
+
     fn get_bc(&self) -> u16 {
         (self.b as u16) << 8 | (self.c as u16)
     }
 
     fn get_de(&self) -> u16 {
         (self.d as u16) << 8 | (self.e as u16)
+    }
+
+    fn get_hl(&self) -> u16 {
+        (self.h as u16) << 8 | (self.l as u16)
     }
 
     fn next_opcode(&self) -> String {
