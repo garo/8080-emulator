@@ -283,6 +283,16 @@ impl Em8080 {
             0x86 => { self.add(self.get_m()); (1, 4) },
             0x87 => { self.add(self.a); (1, 4) },
 
+            // ADC
+            0x88 => { self.adc(self.b); (1, 4) },
+            0x89 => { self.adc(self.c); (1, 4) },
+            0x8A => { self.adc(self.d); (1, 4) },
+            0x8B => { self.adc(self.e); (1, 4) },
+            0x8C => { self.adc(self.h); (1, 4) },
+            0x8D => { self.adc(self.l); (1, 4) },
+            0x8E => { self.adc(self.get_m()); (1, 4) },
+            0x8F => { self.adc(self.a); (1, 4) },
+
             // Unimplemented
             _ => {
                 println!(
@@ -388,6 +398,13 @@ impl Em8080 {
         self.flags.set_all(result, (self.a & 0xf).wrapping_add(operand & 0xf));
         self.a = result as u8;
     }
+
+    /// Add `operand` + carry to A
+    fn adc(&mut self, operand: u8) {
+        let result = (self.a as u16).wrapping_add(operand as u16).wrapping_add(self.flags.carry as u16);
+        self.flags.set_all(result, (self.a & 0xf).wrapping_add(operand.wrapping_add(self.flags.carry as u8) & 0xf));
+        self.a = result as u8;
+    }    
     
     fn op_name(&self, address: u16) -> String {
         return match self.read_byte(address) {

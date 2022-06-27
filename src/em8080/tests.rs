@@ -624,5 +624,50 @@ fn test_add() {
     
     run_op(&mut sys, "87"); // ADD A
     assert_eq!(sys.a, 0x10);
-
 }
+
+#[test]
+fn test_adc() {
+    let mut sys = Em8080::new();
+
+    sys.flags.carry = true;
+    sys.a = 1;
+    sys.b = 1;
+    run_op(&mut sys, "88"); // ADC B
+    assert_eq!(sys.a, 0x03);
+
+    sys.flags.carry = true;
+    sys.c = 1;
+    run_op(&mut sys, "89"); // ADC C
+    assert_eq!(sys.a, 0x05);
+    
+    sys.flags.carry = true;
+    sys.d = 1;
+    run_op(&mut sys, "8A"); // ADC D
+    assert_eq!(sys.a, 0x07);
+    
+    sys.flags.carry = true;
+    sys.e = 1;
+    run_op(&mut sys, "8B"); // ADC E
+    assert_eq!(sys.a, 0x09);
+    
+    sys.flags.carry = true;
+    sys.h = 1;
+    run_op(&mut sys, "8C"); // ADC H
+    assert_eq!(sys.a, 0x0B);
+    
+    sys.flags.carry = true;
+    sys.l = 1;
+    run_op(&mut sys, "8D"); // ADC L
+    assert_eq!(sys.a, 0x0D);
+    
+    sys.flags.carry = true;
+    sys.memory[0x0101] = 1;
+    run_op(&mut sys, "8E"); // ADC M
+    assert_eq!(sys.a, 0x0F);
+    
+    sys.flags.carry = true;
+    run_op(&mut sys, "8F"); // ADC A
+    assert_eq!(sys.a, 0x1F);
+}
+
