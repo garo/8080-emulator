@@ -346,9 +346,11 @@ fn test_mov() {
     run_op(&mut sys, "65"); // MOV H, L
     assert_eq!(sys.h, 0x06);
 
-    sys.memory[0x0506] = 0xAA;
+    sys.h = 0x05;
+    sys.l = 0x06;
+    sys.memory[0x0506] = 0xBB;
     run_op(&mut sys, "66"); // MOV H, M
-    assert_eq!(sys.h, 0xAA);
+    assert_eq!(sys.h, 0xBB);
 
     sys.a = 7;
     run_op(&mut sys, "67"); // MOV H, A
@@ -386,8 +388,76 @@ fn test_mov() {
 
     sys.a = 7;
     run_op(&mut sys, "6F"); // MOV L, A
-    assert_eq!(sys.l, 0x07);    
+    assert_eq!(sys.l, 0x07);
 
+    // Row 4
+
+    sys.h = 0x10;
+    sys.l = 0x20;
+    sys.b = 1;
+    run_op(&mut sys, "70"); // MOV M, B
+    assert_eq!(sys.memory[0x1020], 0x01);
+
+    sys.c = 2;
+    run_op(&mut sys, "71"); // MOV M, C
+    assert_eq!(sys.memory[0x1020], 0x02);
+
+    sys.d = 3;
+    run_op(&mut sys, "72"); // MOV M, D
+    assert_eq!(sys.memory[0x1020], 0x03);
+
+    sys.e = 4;
+    run_op(&mut sys, "73"); // MOV M, E
+    assert_eq!(sys.memory[0x1020], 0x04);
+
+    sys.h = 0x10;
+    sys.l = 0x20;
+    run_op(&mut sys, "74"); // MOV M, H
+    assert_eq!(sys.memory[0x1020], 0x10);
+
+    sys.h = 0x10;
+    sys.l = 0x20;
+    run_op(&mut sys, "75"); // MOV M, L
+    assert_eq!(sys.memory[0x1020], 0x20);
+
+    sys.h = 0x10;
+    sys.l = 0x20;
+    sys.a = 7;
+    run_op(&mut sys, "77"); // MOV M, A
+    assert_eq!(sys.memory[0x1020], 0x07);
+
+
+    sys.b = 1;
+    run_op(&mut sys, "78"); // MOV A, B
+    assert_eq!(sys.a, 0x01);
+
+    sys.c = 2;
+    run_op(&mut sys, "79"); // MOV A, C
+    assert_eq!(sys.a, 0x02);
+
+    sys.d = 3;
+    run_op(&mut sys, "7A"); // MOV A, D
+    assert_eq!(sys.a, 0x03);
+
+    sys.e = 4;
+    run_op(&mut sys, "7B"); // MOV A, E
+    assert_eq!(sys.a, 0x04);
+
+    sys.h = 5;
+    run_op(&mut sys, "7C"); // MOV A, H
+    assert_eq!(sys.a, 0x05);
+
+    sys.l = 6;
+    run_op(&mut sys, "7D"); // MOV A, L
+    assert_eq!(sys.a, 0x06);
+
+    sys.memory[0x0506] = 0xAA;
+    run_op(&mut sys, "7E"); // MOV A, M
+    assert_eq!(sys.a, 0xAA);
+
+    sys.a = 7;
+    run_op(&mut sys, "7F"); // MOV A, A
+    assert_eq!(sys.a, 0x07);
 
 }
 

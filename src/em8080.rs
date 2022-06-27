@@ -172,7 +172,7 @@ impl Em8080 {
 
             0x46 => { // MOV B, M
                 self.b = self.get_m();
-                (1, 5)
+                (1, 7)
             },
 
             0x47 => { // MOV B, A
@@ -212,7 +212,7 @@ impl Em8080 {
 
             0x4E => { // MOV C, M
                 self.c = self.get_m();
-                (1, 5)
+                (1, 7)
             },
 
             0x4F => { // MOV C, A
@@ -254,7 +254,7 @@ impl Em8080 {
 
             0x56 => { // MOV D, M
                 self.d = self.get_m();
-                (1, 5)
+                (1, 7)
             },
 
             0x57 => { // MOV D, A
@@ -294,7 +294,7 @@ impl Em8080 {
 
             0x5E => { // MOV E, M
                 self.e = self.get_m();
-                (1, 5)
+                (1, 7)
             },
 
             0x5F => { // MOV E, A
@@ -304,86 +304,162 @@ impl Em8080 {
 
             // MOV, Row 3
 
-            0x50 => { // MOV H, B
-                self.d = self.b;
+            0x60 => { // MOV H, B
+                self.h = self.b;
                 (1, 5)
             },
 
-            0x51 => { // MOV H, C
-                self.d = self.c;
+            0x61 => { // MOV H, C
+                self.h = self.c;
                 (1, 5)
             },
 
-            0x52 => { // MOV H, D
-                self.d = self.d;
+            0x62 => { // MOV H, D
+                self.h = self.d;
                 (1, 5)
             },
 
-            0x53 => { // MOV H, E
-                self.d = self.e;
+            0x63 => { // MOV H, E
+                self.h = self.e;
                 (1, 5)
             },
 
-            0x54 => { // MOV H, H
-                self.d = self.h;
+            0x64 => { // MOV H, H
+                self.h = self.h;
                 (1, 5)
             },
 
-            0x55 => { // MOV H, L
-                self.d = self.l;
+            0x65 => { // MOV H, L
+                self.h = self.l;
                 (1, 5)
             },
 
-            0x56 => { // MOV H, M
-                self.d = self.get_m();
+            0x66 => { // MOV H, M
+                self.h = self.get_m();
+                (1, 7)
+            },
+
+            0x67 => { // MOV H, A
+                self.h = self.a;
                 (1, 5)
             },
 
-            0x57 => { // MOV H, A
-                self.d = self.a;
+            0x68 => { // MOV L, B
+                self.l = self.b;
                 (1, 5)
             },
 
-            0x58 => { // MOV L, B
-                self.e = self.b;
+            0x69 => { // MOV L, C
+                self.l = self.c;
                 (1, 5)
             },
 
-            0x59 => { // MOV L, C
-                self.e = self.c;
+            0x6A => { // MOV L, D
+                self.l = self.d;
                 (1, 5)
             },
 
-            0x5A => { // MOV L, D
-                self.e = self.d;
-                (1, 5)
-            },
-
-            0x5B => { // MOV L, E
+            0x6B => { // MOV L, E
                 self.l = self.e;
                 (1, 5)
             },
 
-            0x5C => { // MOV L, H
+            0x6C => { // MOV L, H
                 self.l = self.h;
                 (1, 5)
             },
 
-            0x5D => { // MOV L, L
+            0x6D => { // MOV L, L
                 self.l = self.l;
                 (1, 5)
             },
 
-            0x5E => { // MOV L, M
+            0x6E => { // MOV L, M
                 self.l = self.get_m();
-                (1, 5)
+                (1, 7)
             },
 
-            0x5F => { // MOV L, A
+            0x6F => { // MOV L, A
                 self.l = self.a;
                 (1, 5)
             },
 
+            // MOV Row 4
+
+            0x70 => { // MOV M, B
+                self.set_m(self.b);
+                (1, 7)
+            },
+
+            0x71 => { // MOV M, C
+                self.set_m(self.c);
+                (1, 7)
+            },
+
+            0x72 => { // MOV M, D
+                self.set_m(self.d);
+                (1, 7)
+            },
+
+            0x73 => { // MOV M, E
+                self.set_m(self.e);
+                (1, 7)
+            },
+
+            0x74 => { // MOV M, H
+                self.set_m(self.h);
+                (1, 7)
+            },
+
+            0x75 => { // MOV M, L
+                self.set_m(self.l);
+                (1, 7)
+            },
+
+            0x77 => { // MOV M, A
+                self.set_m(self.a);
+                (1, 7)
+            },
+
+            0x78 => { // MOV A, B
+                self.a = self.b;
+                (1, 5)
+            },
+
+            0x79 => { // MOV A, C
+                self.a = self.c;
+                (1, 5)
+            },
+
+            0x7A => { // MOV A, D
+                self.a = self.d;
+                (1, 5)
+            },
+
+            0x7B => { // MOV A, E
+                self.a = self.e;
+                (1, 5)
+            },
+
+            0x7C => { // MOV A, H
+                self.a = self.h;
+                (1, 5)
+            },
+
+            0x7D => { // MOV A, L
+                self.a = self.l;
+                (1, 5)
+            },
+
+            0x7E => { // MOV A, M
+                self.a = self.get_m();
+                (1, 7)
+            },
+
+            0x7F => { // MOV A, A
+                self.a = self.a;
+                (1, 5)
+            },            
 
             // Unimplemented
             _ => {
@@ -460,6 +536,10 @@ impl Em8080 {
 
     fn get_m(&self) -> u8 {
         self.read_byte(self.get_hl())
+    }
+
+    fn set_m(&mut self, value: u8) {
+        self.write_byte(self.get_hl(), value)
     }
 
     fn next_opcode(&self) -> String {
