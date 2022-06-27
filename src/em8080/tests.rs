@@ -461,3 +461,168 @@ fn test_mov() {
 
 }
 
+/*
+#[test]
+fn test_add() {
+    let mut sys = Em8080::new();
+    
+    sys.add(&mut self.a, 1, 0);
+    println!("add: {}", sys.a);
+
+    sys.a = 5;
+    sys.b = 2;
+
+    //run_op(&mut sys, "80"); // ADD B
+    //assert_eq!(sys.a, 0x07);
+
+}
+*/
+
+#[test]
+fn test_inr() {
+    let mut sys = Em8080::new();
+    assert_eq!(sys.inr(255), 0);
+    assert_eq!(sys.flags.zero, true);
+
+    run_op(&mut sys, "04"); // INR B
+    assert_eq!(sys.b, 0x01);
+
+    run_op(&mut sys, "0C"); // INR C
+    assert_eq!(sys.c, 0x01);
+
+    run_op(&mut sys, "14"); // INR D
+    assert_eq!(sys.d, 0x01);
+
+    run_op(&mut sys, "1C"); // INR E
+    assert_eq!(sys.d, 0x01);
+
+    run_op(&mut sys, "24"); // INR H
+    assert_eq!(sys.h, 0x01);
+
+    run_op(&mut sys, "2C"); // INR L
+    assert_eq!(sys.h, 0x01);
+
+    sys.h = 0x10;
+    sys.l = 0x20;
+    run_op(&mut sys, "34"); // INR M
+    assert_eq!(sys.memory[0x1020], 0x01);
+
+    run_op(&mut sys, "3C"); // INR A
+    assert_eq!(sys.a, 0x01);
+
+}
+
+#[test]
+fn test_dcr() {
+    let mut sys = Em8080::new();
+    assert_eq!(sys.dcr(255), 254);
+    assert_eq!(sys.flags.zero, false);
+    assert_eq!(sys.dcr(1), 0);
+    assert_eq!(sys.flags.zero, true);
+
+    run_op(&mut sys, "05"); // DCR B
+    assert_eq!(sys.b, 0xFF);
+
+    run_op(&mut sys, "0D"); // DCR C
+    assert_eq!(sys.c, 0xFF);
+
+    run_op(&mut sys, "15"); // DCR D
+    assert_eq!(sys.d, 0xFF);
+
+    run_op(&mut sys, "1D"); // DCR E
+    assert_eq!(sys.d, 0xFF);
+
+    run_op(&mut sys, "25"); // DCR H
+    assert_eq!(sys.h, 0xFF);
+
+    run_op(&mut sys, "2D"); // DCR L
+    assert_eq!(sys.h, 0xFF);
+
+    sys.h = 0x10;
+    sys.l = 0x20;
+    run_op(&mut sys, "35"); // DCR M
+    assert_eq!(sys.memory[0x1020], 0xFF);
+
+    run_op(&mut sys, "3D"); // DCR A
+    assert_eq!(sys.a, 0xFF);
+
+}
+
+#[test]
+fn test_inx() {
+    let mut sys = Em8080::new();
+    sys.set_bc(0xFF);
+    run_op(&mut sys, "03"); // INX B
+    assert_eq!(sys.get_bc(), 0x100);
+    
+    sys.set_de(0xFF);
+    run_op(&mut sys, "13"); // INX D
+    assert_eq!(sys.get_de(), 0x100);
+    
+    sys.set_hl(0xFF);
+    run_op(&mut sys, "23"); // INX H
+    assert_eq!(sys.get_hl(), 0x100);
+    
+    sys.sp = 0xFF;
+    run_op(&mut sys, "33"); // INX SP
+    assert_eq!(sys.sp, 0x100);
+
+}
+
+#[test]
+fn test_dcx() {
+    let mut sys = Em8080::new();
+    sys.set_bc(0x100);
+    run_op(&mut sys, "0B"); // DCX B
+    assert_eq!(sys.get_bc(), 0xFF);
+    
+    sys.set_de(0x100);
+    run_op(&mut sys, "1B"); // DCX D
+    assert_eq!(sys.get_de(), 0xFF);
+    
+    sys.set_hl(0x100);
+    run_op(&mut sys, "2B"); // DCX H
+    assert_eq!(sys.get_hl(), 0xFF);
+    
+    sys.sp = 0x100;
+    run_op(&mut sys, "3B"); // DCX SP
+    assert_eq!(sys.sp, 0xFF);
+}
+
+#[test]
+fn test_add() {
+    let mut sys = Em8080::new();
+
+    sys.a = 1;
+    sys.b = 1;
+    run_op(&mut sys, "80"); // ADD B
+    assert_eq!(sys.a, 0x02);
+    
+    sys.c = 1;
+    run_op(&mut sys, "81"); // ADD C
+    assert_eq!(sys.a, 0x03);
+    
+    sys.d = 1;
+    run_op(&mut sys, "82"); // ADD D
+    assert_eq!(sys.a, 0x04);
+    
+    sys.e = 1;
+    run_op(&mut sys, "83"); // ADD E
+    assert_eq!(sys.a, 0x05);
+    
+    sys.h = 1;
+    run_op(&mut sys, "84"); // ADD H
+    assert_eq!(sys.a, 0x06);
+    
+    sys.l = 1;
+    run_op(&mut sys, "85"); // ADD L
+    assert_eq!(sys.a, 0x07);
+    
+    sys.memory[0x0101] = 1;
+    run_op(&mut sys, "86"); // ADD M
+    assert_eq!(sys.a, 0x08);
+    
+    run_op(&mut sys, "87"); // ADD A
+    assert_eq!(sys.a, 0x10);
+
+}

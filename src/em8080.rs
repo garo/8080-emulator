@@ -4,9 +4,10 @@ use std::{self, fmt};
 #[cfg(test)]
 mod tests;
 
+mod flags;
+use flags::Flags;
+
 const MEMORY_SIZE: usize = 0x4000;
-
-
 
 pub struct Em8080 {
 
@@ -24,6 +25,9 @@ pub struct Em8080 {
     pc: u16,
 
     memory: [u8; MEMORY_SIZE],
+
+    // Flags
+    flags: Flags,
 }
 
 impl std::default::Default for Em8080 {
@@ -40,6 +44,14 @@ impl std::default::Default for Em8080 {
             pc: 0,
 
             memory: [0; MEMORY_SIZE],
+
+            flags: Flags {
+                zero: false,
+                sign: false,
+                parity: false,
+                carry: false,
+                aux_carry: false,
+            },            
         }
     }
 }
@@ -57,7 +69,7 @@ impl fmt::Debug for Em8080 {
                0, //self.hl(),
                self.pc,
                self.sp,
-               0, //self.flags,
+               self.flags,
         )
     }
 }
@@ -66,6 +78,10 @@ impl Em8080 {
     pub fn new() -> Self {
         Self::default()
     }
+
+    pub fn flags(&self) -> &Flags {
+        &self.flags
+    }    
 
     pub fn emulate(&mut self /* , io_state: &mut IOState */) -> u64 {
         let op_code = self.read_byte(self.pc);
@@ -140,326 +156,132 @@ impl Em8080 {
             },
             
             // MOV
-            0x40 => { // MOV B, B
-                self.b = self.b;
-                (1, 5)
-            },
+            0x40 => { self.b = self.b; (1, 5) },
+            0x41 => { self.b = self.c; (1, 5) },
+            0x42 => { self.b = self.d; (1, 5) },
+            0x43 => { self.b = self.e; (1, 5) },
+            0x44 => { self.b = self.h; (1, 5) },
+            0x45 => { self.b = self.l; (1, 5) },
+            0x46 => { self.b = self.get_m(); (1, 7) },
+            0x47 => { self.b = self.a; (1, 5) },
 
-            0x41 => { // MOV B, C
-                self.b = self.c;
-                (1, 5)
-            },
-
-            0x42 => { // MOV B, D
-                self.b = self.d;
-                (1, 5)
-            },
-
-            0x43 => { // MOV B, E
-                self.b = self.e;
-                (1, 5)
-            },
-
-            0x44 => { // MOV B, H
-                self.b = self.h;
-                (1, 5)
-            },
-
-            0x45 => { // MOV B, L
-                self.b = self.l;
-                (1, 5)
-            },
-
-            0x46 => { // MOV B, M
-                self.b = self.get_m();
-                (1, 7)
-            },
-
-            0x47 => { // MOV B, A
-                self.b = self.a;
-                (1, 5)
-            },
-
-            0x48 => { // MOV C, B
-                self.c = self.b;
-                (1, 5)
-            },
-
-            0x49 => { // MOV C, C
-                self.c = self.c;
-                (1, 5)
-            },
-
-            0x4A => { // MOV C, D
-                self.c = self.d;
-                (1, 5)
-            },
-
-            0x4B => { // MOV C, E
-                self.c = self.e;
-                (1, 5)
-            },
-
-            0x4C => { // MOV C, H
-                self.c = self.h;
-                (1, 5)
-            },
-
-            0x4D => { // MOV C, L
-                self.c = self.l;
-                (1, 5)
-            },
-
-            0x4E => { // MOV C, M
-                self.c = self.get_m();
-                (1, 7)
-            },
-
-            0x4F => { // MOV C, A
-                self.c = self.a;
-                (1, 5)
-            },
+            0x48 => { self.c = self.b; (1, 5) },
+            0x49 => { self.c = self.c; (1, 5) },
+            0x4A => { self.c = self.d; (1, 5) },
+            0x4B => { self.c = self.e; (1, 5) },
+            0x4C => { self.c = self.h; (1, 5) },
+            0x4D => { self.c = self.l; (1, 5) },
+            0x4E => { self.c = self.get_m(); (1, 7) },
+            0x4F => { self.c = self.a; (1, 5) },
 
             // MOV, ROW 2
-
-            0x50 => { // MOV D, B
-                self.d = self.b;
-                (1, 5)
-            },
-
-            0x51 => { // MOV D, C
-                self.d = self.c;
-                (1, 5)
-            },
-
-            0x52 => { // MOV D, D
-                self.d = self.d;
-                (1, 5)
-            },
-
-            0x53 => { // MOV D, E
-                self.d = self.e;
-                (1, 5)
-            },
-
-            0x54 => { // MOV D, H
-                self.d = self.h;
-                (1, 5)
-            },
-
-            0x55 => { // MOV D, L
-                self.d = self.l;
-                (1, 5)
-            },
-
-            0x56 => { // MOV D, M
-                self.d = self.get_m();
-                (1, 7)
-            },
-
-            0x57 => { // MOV D, A
-                self.d = self.a;
-                (1, 5)
-            },
-
-            0x58 => { // MOV E, B
-                self.e = self.b;
-                (1, 5)
-            },
-
-            0x59 => { // MOV E, C
-                self.e = self.c;
-                (1, 5)
-            },
-
-            0x5A => { // MOV E, D
-                self.e = self.d;
-                (1, 5)
-            },
-
-            0x5B => { // MOV E, E
-                self.e = self.e;
-                (1, 5)
-            },
-
-            0x5C => { // MOV E, H
-                self.e = self.h;
-                (1, 5)
-            },
-
-            0x5D => { // MOV E, L
-                self.e = self.l;
-                (1, 5)
-            },
-
-            0x5E => { // MOV E, M
-                self.e = self.get_m();
-                (1, 7)
-            },
-
-            0x5F => { // MOV E, A
-                self.e = self.a;
-                (1, 5)
-            },
+            0x50 => { self.d = self.b; (1, 5) },
+            0x51 => { self.d = self.c; (1, 5) },
+            0x52 => { self.d = self.d; (1, 5) },
+            0x53 => { self.d = self.e; (1, 5) },
+            0x54 => { self.d = self.h; (1, 5) },
+            0x55 => { self.d = self.l; (1, 5) },
+            0x56 => { self.d = self.get_m(); (1, 7) },
+            0x57 => { self.d = self.a; (1, 5) },
+            0x58 => { self.e = self.b; (1, 5) },
+            0x59 => { self.e = self.c; (1, 5) },
+            0x5A => { self.e = self.d; (1, 5) },
+            0x5B => { self.e = self.e; (1, 5) },
+            0x5C => { self.e = self.h; (1, 5) },
+            0x5D => { self.e = self.l; (1, 5) },
+            0x5E => { self.e = self.get_m(); (1, 7) },
+            0x5F => { self.e = self.a; (1, 5) },
 
             // MOV, Row 3
+            0x60 => { self.h = self.b; (1, 5) },
+            0x61 => { self.h = self.c; (1, 5) },
+            0x62 => { self.h = self.d; (1, 5) },
+            0x63 => { self.h = self.e; (1, 5) },
+            0x64 => { self.h = self.h; (1, 5) },
+            0x65 => { self.h = self.l; (1, 5) },
+            0x66 => { self.h = self.get_m(); (1, 7) },
+            0x67 => { self.h = self.a; (1, 5) },
 
-            0x60 => { // MOV H, B
-                self.h = self.b;
-                (1, 5)
-            },
-
-            0x61 => { // MOV H, C
-                self.h = self.c;
-                (1, 5)
-            },
-
-            0x62 => { // MOV H, D
-                self.h = self.d;
-                (1, 5)
-            },
-
-            0x63 => { // MOV H, E
-                self.h = self.e;
-                (1, 5)
-            },
-
-            0x64 => { // MOV H, H
-                self.h = self.h;
-                (1, 5)
-            },
-
-            0x65 => { // MOV H, L
-                self.h = self.l;
-                (1, 5)
-            },
-
-            0x66 => { // MOV H, M
-                self.h = self.get_m();
-                (1, 7)
-            },
-
-            0x67 => { // MOV H, A
-                self.h = self.a;
-                (1, 5)
-            },
-
-            0x68 => { // MOV L, B
-                self.l = self.b;
-                (1, 5)
-            },
-
-            0x69 => { // MOV L, C
-                self.l = self.c;
-                (1, 5)
-            },
-
-            0x6A => { // MOV L, D
-                self.l = self.d;
-                (1, 5)
-            },
-
-            0x6B => { // MOV L, E
-                self.l = self.e;
-                (1, 5)
-            },
-
-            0x6C => { // MOV L, H
-                self.l = self.h;
-                (1, 5)
-            },
-
-            0x6D => { // MOV L, L
-                self.l = self.l;
-                (1, 5)
-            },
-
-            0x6E => { // MOV L, M
-                self.l = self.get_m();
-                (1, 7)
-            },
-
-            0x6F => { // MOV L, A
-                self.l = self.a;
-                (1, 5)
-            },
+            0x68 => { self.l = self.b; (1, 5) },
+            0x69 => { self.l = self.c; (1, 5) },
+            0x6A => { self.l = self.d; (1, 5) },
+            0x6B => { self.l = self.e; (1, 5) },
+            0x6C => { self.l = self.h; (1, 5) },
+            0x6D => { self.l = self.l; (1, 5) },
+            0x6E => { self.l = self.get_m(); (1, 7) },
+            0x6F => { self.l = self.a; (1, 5) },
 
             // MOV Row 4
 
-            0x70 => { // MOV M, B
-                self.set_m(self.b);
-                (1, 7)
-            },
+            0x70 => { self.set_m(self.b); (1, 7) },
+            0x71 => { self.set_m(self.c); (1, 7) },
+            0x72 => { self.set_m(self.d); (1, 7) },
+            0x73 => { self.set_m(self.e); (1, 7) },
+            0x74 => { self.set_m(self.h); (1, 7) },
+            0x75 => { self.set_m(self.l); (1, 7) },
+            0x77 => { self.set_m(self.a); (1, 7) },
 
-            0x71 => { // MOV M, C
-                self.set_m(self.c);
-                (1, 7)
-            },
+            0x78 => { self.a = self.b; (1, 5) },
+            0x79 => { self.a = self.c; (1, 5) },
+            0x7A => { self.a = self.d; (1, 5) },
+            0x7B => { self.a = self.e; (1, 5) },
+            0x7C => { self.a = self.h; (1, 5) },
+            0x7D => { self.a = self.l; (1, 5) },
+            0x7E => { self.a = self.get_m(); (1, 7) },
+            0x7F => { self.a = self.a; (1, 5) },
 
-            0x72 => { // MOV M, D
-                self.set_m(self.d);
-                (1, 7)
-            },
+            // INR
 
-            0x73 => { // MOV M, E
-                self.set_m(self.e);
-                (1, 7)
+            0x04 => { self.b = self.inr(self.b); (1, 5) },
+            0x0C => { self.c = self.inr(self.c); (1, 5) },
+            0x14 => { self.d = self.inr(self.d); (1, 5) },
+            0x1C => { self.e = self.inr(self.e); (1, 5) },
+            0x24 => { self.h = self.inr(self.h); (1, 5) },
+            0x2C => { self.l = self.inr(self.l); (1, 5) },
+            0x34 => {
+                let value = self.inr(self.get_m());
+                self.set_m(value);
+                (1, 10)
             },
+            0x3C => { self.a = self.inr(self.a); (1, 5) },
 
-            0x74 => { // MOV M, H
-                self.set_m(self.h);
-                (1, 7)
+            // DCR
+
+            0x05 => { self.b = self.dcr(self.b); (1, 5) },
+            0x0D => { self.c = self.dcr(self.c); (1, 5) },
+            0x15 => { self.d = self.dcr(self.d); (1, 5) },
+            0x1D => { self.e = self.dcr(self.e); (1, 5) },
+            0x25 => { self.h = self.dcr(self.h); (1, 5) },
+            0x2D => { self.l = self.dcr(self.l); (1, 5) },
+            0x35 => {
+                let value = self.dcr(self.get_m()); 
+                self.set_m(value);
+                (1, 10)
             },
+            0x3D => { self.a = self.dcr(self.a); (1, 5) },
 
-            0x75 => { // MOV M, L
-                self.set_m(self.l);
-                (1, 7)
-            },
+            // INX
 
-            0x77 => { // MOV M, A
-                self.set_m(self.a);
-                (1, 7)
-            },
+            0x03 => { self.set_bc(self.get_bc() + 1); (1, 5) },
+            0x13 => { self.set_de(self.get_de() + 1); (1, 5) },
+            0x23 => { self.set_hl(self.get_hl() + 1); (1, 5) },
+            0x33 => { self.sp += 1; (1, 5) },
 
-            0x78 => { // MOV A, B
-                self.a = self.b;
-                (1, 5)
-            },
+            // DCX
+            0x0B => { self.set_bc(self.get_bc() - 1); (1, 5) },
+            0x1B => { self.set_de(self.get_de() - 1); (1, 5) },
+            0x2B => { self.set_hl(self.get_hl() - 1); (1, 5) },
+            0x3B => { self.sp -= 1; (1, 5) },
 
-            0x79 => { // MOV A, C
-                self.a = self.c;
-                (1, 5)
-            },
-
-            0x7A => { // MOV A, D
-                self.a = self.d;
-                (1, 5)
-            },
-
-            0x7B => { // MOV A, E
-                self.a = self.e;
-                (1, 5)
-            },
-
-            0x7C => { // MOV A, H
-                self.a = self.h;
-                (1, 5)
-            },
-
-            0x7D => { // MOV A, L
-                self.a = self.l;
-                (1, 5)
-            },
-
-            0x7E => { // MOV A, M
-                self.a = self.get_m();
-                (1, 7)
-            },
-
-            0x7F => { // MOV A, A
-                self.a = self.a;
-                (1, 5)
-            },            
+            // ADD
+            0x80 => { self.add(self.b); (1, 4) },
+            0x81 => { self.add(self.c); (1, 4) },
+            0x82 => { self.add(self.d); (1, 4) },
+            0x83 => { self.add(self.e); (1, 4) },
+            0x84 => { self.add(self.h); (1, 4) },
+            0x85 => { self.add(self.l); (1, 4) },
+            0x86 => { self.add(self.get_m()); (1, 4) },
+            0x87 => { self.add(self.a); (1, 4) },
 
             // Unimplemented
             _ => {
@@ -544,6 +366,27 @@ impl Em8080 {
 
     fn next_opcode(&self) -> String {
         self.op_name(self.pc)
+    }
+
+    /// Increments `operand`
+    fn inr(&mut self, operand: u8) -> u8 {
+        let result = operand.wrapping_add(1);
+        self.flags.set_all_but_carry(result);
+        result
+    }
+
+    /// Decrements `operand`
+    fn dcr(&mut self, operand: u8) -> u8 {
+        let result = operand.wrapping_sub(1);
+        self.flags.set_all_but_carry(result);
+        result
+    }
+
+    /// Add `operand` to A
+    fn add(&mut self, operand: u8) {
+        let result = (self.a as u16).wrapping_add(operand as u16);
+        self.flags.set_all(result, (self.a & 0xf).wrapping_add(operand & 0xf));
+        self.a = result as u8;
     }
     
     fn op_name(&self, address: u16) -> String {
