@@ -2,6 +2,11 @@ use std::{num::ParseIntError};
 
 use crate::em8080::Em8080;
 
+// Many (but not all) test cases are coming from
+// this old 8080 programmers manual
+// https://altairclone.com/downloads/manuals/8080%20Programmers%20Manual.pdf
+
+
 #[test]
 fn it_works() {
     let result = 2 + 2;
@@ -978,4 +983,52 @@ fn test_ani() {
     sys.a = 0x3A;
     run_op(&mut sys, "E60F");
     assert_eq!(sys.a, 0x0A);
+}
+
+#[test]
+fn test_ori() {
+    let mut sys = Em8080::new();
+    
+    sys.a = 0xB5;
+    run_op(&mut sys, "F60F");
+    assert_eq!(sys.a, 0xBF);
+}
+
+#[test]
+fn test_aci() {
+    let mut sys = Em8080::new();
+    
+    sys.flags.carry = true;
+    sys.a = 1;
+    run_op(&mut sys, "CE01");
+    assert_eq!(sys.a, 0x03);
+}
+
+#[test]
+fn test_sbi() {
+    let mut sys = Em8080::new();
+    
+    sys.flags.carry = true;
+    sys.a = 3;
+    run_op(&mut sys, "DE01");
+    assert_eq!(sys.a, 0x01);
+}
+
+#[test]
+fn test_xri() {
+    let mut sys = Em8080::new();
+    
+    sys.a = 0x3B;
+    run_op(&mut sys, "EE81");
+    assert_eq!(sys.a, 0xBA);
+}
+
+#[test]
+fn test_cpi() {
+    let mut sys = Em8080::new();
+    
+    sys.a = 0x4A;
+    run_op(&mut sys, "FE40");
+    assert_eq!(sys.flags.zero, false);
+    assert_eq!(sys.flags.carry, false);
 }

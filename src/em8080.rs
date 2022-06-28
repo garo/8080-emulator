@@ -460,22 +460,28 @@ impl Em8080 {
             }
 
             // ADI D8
-            0xC6 => {
-                self.add(self.read_next_byte());
-                (2, 7)
-            }
+            0xC6 => { self.add(self.read_next_byte()); (2, 7) }
 
             // SUI D8
-            0xD6 => {
-                self.sub(self.read_next_byte());
-                (2, 7)
-            }
+            0xD6 => { self.sub(self.read_next_byte()); (2, 7) }
 
             // ANI D8
-            0xE6 => {
-                self.and(self.read_next_byte());
-                (2, 7)
-            }
+            0xE6 => { self.and(self.read_next_byte()); (2, 7) }
+
+            // ORI D8
+            0xF6 => { self.or(self.read_next_byte()); (2, 7) }
+
+            // ADI d8
+            0xCE => { self.adc(self.read_next_byte()); (1, 7) },
+
+            // SBI d8
+            0xDE => { self.sbb(self.read_next_byte()); (1, 7) },
+
+            // XRI d8
+            0xEE => { self.xor(self.read_next_byte()); (1, 7) },
+
+            // CPI d8
+            0xFE => { self.cmp(self.read_next_byte()); (1, 7) },
 
             // Unimplemented
             _ => {
