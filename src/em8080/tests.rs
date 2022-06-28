@@ -671,3 +671,311 @@ fn test_adc() {
     assert_eq!(sys.a, 0x1F);
 }
 
+#[test]
+fn test_sub() {
+    let mut sys = Em8080::new();
+
+    sys.a = 10;
+    sys.b = 1;
+    run_op(&mut sys, "90"); // SUB B
+    assert_eq!(sys.a, 0x09);
+    
+    sys.c = 1;
+    run_op(&mut sys, "91"); // SUB C
+    assert_eq!(sys.a, 0x08);
+    
+    sys.d = 1;
+    run_op(&mut sys, "92"); // SUB D
+    assert_eq!(sys.a, 0x07);
+    
+    sys.e = 1;
+    run_op(&mut sys, "93"); // SUB E
+    assert_eq!(sys.a, 0x06);
+    
+    sys.h = 1;
+    run_op(&mut sys, "94"); // SUB H
+    assert_eq!(sys.a, 0x05);
+    
+    sys.l = 1;
+    run_op(&mut sys, "95"); // SUB L
+    assert_eq!(sys.a, 0x04);
+    
+    sys.memory[0x0101] = 1;
+    run_op(&mut sys, "96"); // SUB M
+    assert_eq!(sys.a, 0x03);
+    
+    run_op(&mut sys, "97"); // SUB A
+    assert_eq!(sys.a, 0x00);
+}
+
+#[test]
+fn test_sbb() {
+    let mut sys = Em8080::new();
+
+    sys.a = 4;
+    sys.b = 2;
+    sys.flags.carry = true;
+    run_op(&mut sys, "98"); // SBB B
+    assert_eq!(sys.a, 0x01);
+}
+
+#[test]
+fn test_ana() {
+    let mut sys = Em8080::new();
+
+    sys.a = 0xFC;
+    sys.b = 0xF;
+    sys.flags.carry = true;
+    run_op(&mut sys, "A0"); // ANA B
+    assert_eq!(sys.a, 0x0C);
+}
+
+#[test]
+fn test_xra() {
+    let mut sys = Em8080::new();
+
+    sys.a = 0x5C;
+    sys.b = 0x78;
+    sys.flags.carry = true;
+    run_op(&mut sys, "A8"); // XRA B
+    assert_eq!(sys.a, 0x24);
+}
+
+
+#[test]
+fn test_ora() {
+    let mut sys = Em8080::new();
+
+    sys.a = 0x33;
+    sys.b = 0x0F;
+    sys.flags.carry = true;
+    run_op(&mut sys, "B0"); // ORA B
+    assert_eq!(sys.a, 0x3F);
+}
+
+#[test]
+fn test_cmp() {
+    let mut sys = Em8080::new();
+
+    sys.a = 0x0A;
+    sys.e = 0x05;
+    run_op(&mut sys, "BB"); // CMP E
+    //println!("CMP 0xA vs 0x5:\n{:#?}", sys);
+    assert_eq!(sys.flags.carry, false);
+    assert_eq!(sys.flags.zero, false);
+
+    sys.a = 0x0A;
+    sys.e = 0x0A;
+    run_op(&mut sys, "BB"); // CMP E
+    //println!("CMP 0xA vs 0xA:\n{:#?}", sys);
+    assert_eq!(sys.flags.zero, true);
+
+    sys.a = 0x0A;
+    sys.e = 0x0F;
+    run_op(&mut sys, "BB"); // CMP E
+    //println!("CMP 0xA vs 0xF:\n{:#?}", sys);
+    assert_eq!(sys.flags.carry, true);
+    assert_eq!(sys.flags.zero, false);
+
+}
+
+#[test]
+fn test_jnz() {
+    let mut sys = Em8080::new();
+
+    sys.flags.zero = false;
+    run_op(&mut sys, "C2FFAA");
+    assert_eq!(sys.pc, 0xAAFF);
+
+    sys.flags.zero = true;
+    run_op(&mut sys, "C21010");
+    assert_eq!(sys.pc, 0x03);
+}
+
+#[test]
+fn test_jnc() {
+    let mut sys = Em8080::new();
+
+    sys.flags.carry = false;
+    run_op(&mut sys, "D2FFAA");
+    assert_eq!(sys.pc, 0xAAFF);
+
+    sys.flags.carry = true;
+    run_op(&mut sys, "D21010");
+    assert_eq!(sys.pc, 0x03);
+}
+
+#[test]
+fn test_jpo() {
+    let mut sys = Em8080::new();
+
+    sys.flags.parity = false;
+    run_op(&mut sys, "E2FFAA");
+    assert_eq!(sys.pc, 0xAAFF);
+
+    sys.flags.parity = true;
+    run_op(&mut sys, "E21010");
+    assert_eq!(sys.pc, 0x03);
+}
+
+#[test]
+fn test_jp() {
+    let mut sys = Em8080::new();
+
+    sys.flags.sign = false;
+    run_op(&mut sys, "F2FFAA");
+    assert_eq!(sys.pc, 0xAAFF);
+
+    sys.flags.sign = true;
+    run_op(&mut sys, "F21010");
+    assert_eq!(sys.pc, 0x03);
+}
+
+#[test]
+fn test_jmp() {
+    let mut sys = Em8080::new();
+
+    run_op(&mut sys, "C3FFAA");
+    assert_eq!(sys.pc, 0xAAFF);
+}
+
+#[test]
+fn test_cnz() {
+    let mut sys = Em8080::new();
+
+    sys.sp = 0x4000;
+    sys.flags.zero = false;
+    run_op(&mut sys, "C4FFAA");
+    assert_eq!(sys.pc, 0xAAFF);
+    assert_eq!(sys.sp, 0x3FFE);
+}
+
+#[test]
+fn test_cnc() {
+    let mut sys = Em8080::new();
+    
+    sys.sp = 0x4000;
+    sys.flags.carry = false;
+    run_op(&mut sys, "D4FFAA");
+    assert_eq!(sys.pc, 0xAAFF);
+    assert_eq!(sys.sp, 0x3FFE);
+}
+
+#[test]
+fn test_cpo() { // Call if Parity Odd
+    let mut sys = Em8080::new();
+    
+    sys.sp = 0x4000;
+    // This number has two 1 in binary, so Parity Odd
+    sys.flags.set_all_but_carry(4);
+    run_op(&mut sys, "E4FFAA");
+    assert_eq!(sys.pc, 0xAAFF);
+    assert_eq!(sys.sp, 0x3FFE);
+
+    sys.sp = 0x4000;
+    // This number has just one 1 in binary, so Parity Odd
+    sys.flags.set_all_but_carry(3);
+    run_op(&mut sys, "E4FFAA");
+    assert_eq!(sys.pc, 0x03);
+    assert_eq!(sys.sp, 0x4000);
+
+}
+
+#[test]
+fn test_cp() { // Call if Plus
+    let mut sys = Em8080::new();
+    
+    
+    // positive value
+    sys.sp = 0x4000;
+    sys.flags.set_all_but_carry(5);
+    run_op(&mut sys, "F4FFAA");
+    assert_eq!(sys.pc, 0xAAFF);
+    assert_eq!(sys.sp, 0x3FFE);
+
+    // negative value (highest bit set)
+    sys.sp = 0x4000;
+    sys.flags.set_all_but_carry(255);
+    run_op(&mut sys, "F4FFAA");
+    assert_eq!(sys.pc, 0x03);
+    assert_eq!(sys.sp, 0x4000);
+}
+
+#[test]
+fn test_push() {
+    let mut sys = Em8080::new();
+    
+    sys.b = 0xAA;
+    sys.c = 0xBB;
+    sys.sp = 0x4000;
+    run_op(&mut sys, "C5");
+    assert_eq!(sys.memory[0x3FFF], 0xAA);
+    assert_eq!(sys.memory[0x3FFE], 0xBB);
+
+
+    sys.a = 0xAA;
+    sys.flags.carry = true;
+    sys.flags.zero = true;
+    sys.flags.parity = true;
+    sys.sp = 0x4000;
+    run_op(&mut sys, "F5");
+    assert_eq!(sys.memory[0x3FFF], 0xAA);
+    assert_eq!(sys.memory[0x3FFE], 0x45);
+}
+
+#[test]
+fn test_pop() {
+    let mut sys = Em8080::new();
+    
+    sys.sp = 0x4000 - 2;
+    sys.memory[0x3FFF] = 0xAA;
+    sys.memory[0x3FFE] = 0xBB;
+    run_op(&mut sys, "C1");
+    assert_eq!(sys.b, 0xAA);
+    assert_eq!(sys.c, 0xBB);
+}
+
+#[test]
+fn test_xthl() {
+    let mut sys = Em8080::new();
+    
+    sys.sp = 0x10AD;
+    sys.memory[0x10AC] = 0xFF;
+    sys.memory[0x10AD] = 0xF0;
+    sys.memory[0x10AE] = 0x0D;
+    sys.memory[0x10AF] = 0xFF;
+    sys.h = 0x0B;
+    sys.l = 0x3C;
+    run_op(&mut sys, "E3");
+    assert_eq!(sys.h, 0x0D);
+    assert_eq!(sys.l, 0xF0);
+    assert_eq!(sys.memory[0x10AD], 0x3C);
+    assert_eq!(sys.memory[0x10AE], 0x0B);
+}
+
+#[test]
+fn test_adi() {
+    let mut sys = Em8080::new();
+    
+    sys.a = 0x1;
+    run_op(&mut sys, "C602");
+    assert_eq!(sys.a, 0x03);
+}
+
+#[test]
+fn test_sui() {
+    let mut sys = Em8080::new();
+    
+    sys.a = 0x4;
+    run_op(&mut sys, "D602");
+    assert_eq!(sys.a, 0x02);
+}
+
+#[test]
+fn test_ani() {
+    let mut sys = Em8080::new();
+    
+    sys.a = 0x3A;
+    run_op(&mut sys, "E60F");
+    assert_eq!(sys.a, 0x0A);
+}

@@ -261,7 +261,6 @@ impl Em8080 {
             0x3D => { self.a = self.dcr(self.a); (1, 5) },
 
             // INX
-
             0x03 => { self.set_bc(self.get_bc() + 1); (1, 5) },
             0x13 => { self.set_de(self.get_de() + 1); (1, 5) },
             0x23 => { self.set_hl(self.get_hl() + 1); (1, 5) },
@@ -280,7 +279,7 @@ impl Em8080 {
             0x83 => { self.add(self.e); (1, 4) },
             0x84 => { self.add(self.h); (1, 4) },
             0x85 => { self.add(self.l); (1, 4) },
-            0x86 => { self.add(self.get_m()); (1, 4) },
+            0x86 => { self.add(self.get_m()); (1, 7) },
             0x87 => { self.add(self.a); (1, 4) },
 
             // ADC
@@ -290,8 +289,193 @@ impl Em8080 {
             0x8B => { self.adc(self.e); (1, 4) },
             0x8C => { self.adc(self.h); (1, 4) },
             0x8D => { self.adc(self.l); (1, 4) },
-            0x8E => { self.adc(self.get_m()); (1, 4) },
+            0x8E => { self.adc(self.get_m()); (1, 7) },
             0x8F => { self.adc(self.a); (1, 4) },
+
+            // SUB
+            0x90 => { self.sub(self.b); (1, 4) },
+            0x91 => { self.sub(self.c); (1, 4) },
+            0x92 => { self.sub(self.d); (1, 4) },
+            0x93 => { self.sub(self.e); (1, 4) },
+            0x94 => { self.sub(self.h); (1, 4) },
+            0x95 => { self.sub(self.l); (1, 4) },
+            0x96 => { self.sub(self.get_m()); (1, 7) },
+            0x97 => { self.sub(self.a); (1, 4) },
+
+            // SBB
+            0x98 => { self.sbb(self.b); (1, 4) },
+            0x99 => { self.sbb(self.c); (1, 4) },
+            0x9A => { self.sbb(self.d); (1, 4) },
+            0x9B => { self.sbb(self.e); (1, 4) },
+            0x9C => { self.sbb(self.h); (1, 4) },
+            0x9D => { self.sbb(self.l); (1, 4) },
+            0x9E => { self.sbb(self.get_m()); (1, 7) },
+            0x9F => { self.sbb(self.a); (1, 4) },
+
+            // ANA (bitwise and)
+            0xA0 => { self.and(self.b); (1, 4) },
+            0xA1 => { self.and(self.c); (1, 4) },
+            0xA2 => { self.and(self.d); (1, 4) },
+            0xA3 => { self.and(self.e); (1, 4) },
+            0xA4 => { self.and(self.h); (1, 4) },
+            0xA5 => { self.and(self.l); (1, 4) },
+            0xA6 => { self.and(self.get_m()); (1, 7) },
+            0xA7 => { self.and(self.a); (1, 4) },
+            
+            // XRA (bitwise xor)
+            0xA8 => { self.xor(self.b); (1, 4) },
+            0xA9 => { self.xor(self.c); (1, 4) },
+            0xAA => { self.xor(self.d); (1, 4) },
+            0xAB => { self.xor(self.e); (1, 4) },
+            0xAC => { self.xor(self.h); (1, 4) },
+            0xAD => { self.xor(self.l); (1, 4) },
+            0xAE => { self.xor(self.get_m()); (1, 7) },
+            0xAF => { self.xor(self.a); (1, 4) },
+            
+            // ORA (bitwise xor)
+            0xB0 => { self.or(self.b); (1, 4) },
+            0xB1 => { self.or(self.c); (1, 4) },
+            0xB2 => { self.or(self.d); (1, 4) },
+            0xB3 => { self.or(self.e); (1, 4) },
+            0xB4 => { self.or(self.h); (1, 4) },
+            0xB5 => { self.or(self.l); (1, 4) },
+            0xB6 => { self.or(self.get_m()); (1, 7) },
+            0xB7 => { self.or(self.a); (1, 4) },
+
+            // CMP
+            0xB8 => { self.cmp(self.b); (1, 4) },
+            0xB9 => { self.cmp(self.c); (1, 4) },
+            0xBA => { self.cmp(self.d); (1, 4) },
+            0xBB => { self.cmp(self.e); (1, 4) },
+            0xBC => { self.cmp(self.h); (1, 4) },
+            0xBD => { self.cmp(self.l); (1, 4) },
+            0xBE => { self.cmp(self.get_m()); (1, 7) },
+            0xBF => { self.cmp(self.a); (1, 4) },
+
+            // JNZ
+            0xC2 => {
+                if self.flags.zero {
+                    (3, 10)
+                } else {
+                    self.jmp(self.read_next_word());
+                    (0, 10)
+                }
+            }
+
+            // JNC
+            0xD2 => {
+                if self.flags.carry {
+                    (3, 10)
+                } else {
+                    self.jmp(self.read_next_word());
+                    (0, 10)
+                }
+            }
+
+            // JPO
+            0xE2 => {
+                if self.flags.parity {
+                    (3, 10)
+                } else {
+                    self.jmp(self.read_next_word());
+                    (0, 10)
+                }
+            }
+
+            // JP
+            0xF2 => {
+                if self.flags.sign {
+                    (3, 10)
+                } else {
+                    self.jmp(self.read_next_word());
+                    (0, 10)
+                }
+            }
+
+            // JMP
+            0xC3 => {
+                self.jmp(self.read_next_word());
+                (0, 10)
+            }
+
+            // CNZ adr
+            0xC4 => {
+                if self.flags.zero {
+                    (3, 11)
+                } else {
+                    self.call(self.read_next_word());
+                    (0, 17)
+                }
+            }
+
+            // CNC adr
+            0xD4 => {
+                if self.flags.carry {
+                    (3, 11)
+                } else {
+                    self.call(self.read_next_word());
+                    (0, 17)
+                }
+            }
+
+            // CPO adr
+            0xE4 => {
+                if self.flags.parity {
+                    (3, 11)
+                } else {
+                    self.call(self.read_next_word());
+                    (0, 17)
+                }
+            }            
+
+            // CP adr
+            0xF4 => {
+                if self.flags.sign {
+                    (3, 11)
+                } else {
+                    self.call(self.read_next_word());
+                    (0, 17)
+                }
+            }
+
+            // PUSH 
+            0xC5 => { self.push(self.get_bc()); (1, 11) }
+            0xD5 => { self.push(self.get_de()); (1, 11) }
+            0xE5 => { self.push(self.get_hl()); (1, 11) }
+            0xF5 => { self.push(self.get_af()); (1, 11) }
+
+            // POP
+            0xC1 => { let v = self.pop(); self.set_bc(v); (1, 10) }
+            0xD1 => { let v = self.pop(); self.set_de(v); (1, 10) }
+            0xE1 => { let v = self.pop(); self.set_hl(v); (1, 10) }
+            0xF1 => { let v = self.pop(); self.set_af(v); (1, 10) }
+
+            // XTHL
+            0xE3 => {
+                let tmp = self.get_hl();
+                let from_stack = self.pop();
+                self.set_hl(from_stack);
+                self.push(tmp);
+                (1, 18)
+            }
+
+            // ADI D8
+            0xC6 => {
+                self.add(self.read_next_byte());
+                (2, 7)
+            }
+
+            // SUI D8
+            0xD6 => {
+                self.sub(self.read_next_byte());
+                (2, 7)
+            }
+
+            // ANI D8
+            0xE6 => {
+                self.and(self.read_next_byte());
+                (2, 7)
+            }
 
             // Unimplemented
             _ => {
@@ -404,8 +588,78 @@ impl Em8080 {
         let result = (self.a as u16).wrapping_add(operand as u16).wrapping_add(self.flags.carry as u16);
         self.flags.set_all(result, (self.a & 0xf).wrapping_add(operand.wrapping_add(self.flags.carry as u8) & 0xf));
         self.a = result as u8;
-    }    
+    }
+
+    /// Subtract `operand` from A
+    fn sub(&mut self, operand: u8) {
+        let result = (self.a as u16).wrapping_sub(operand as u16);
+        self.flags.set_all(result, (self.a & 0xf).wrapping_sub(operand & 0xf));
+        self.a = result as u8;
+    }
+
+    /// Subtract `operand` from A with borrow
+    fn sbb(&mut self, operand: u8) {
+        let result = (self.a as u16).wrapping_sub(operand as u16).wrapping_sub(self.flags.carry as u16);
+        self.flags.set_all(result, (self.a & 0xf).wrapping_sub(operand.wrapping_sub(self.flags.carry as u8) & 0xf));
+        self.a = result as u8;
+    }
     
+    /// Bitwise AND between A and `operand`
+    fn and(&mut self, operand: u8) {
+        self.a &= operand;
+        self.flags.set_all(self.a as u16, self.a);
+    }
+
+    /// Bitwise OR between A and `operand`
+    fn or(&mut self, operand: u8) {
+        self.a |= operand;
+        self.flags.set_all_but_aux_carry(self.a as u16);
+    }
+
+    /// Bitwise XOR between A and `operand`
+    fn xor(&mut self, operand: u8) {
+        self.a ^= operand;
+        self.flags.set_all(self.a as u16, self.a);
+        self.flags.carry = false;
+    }
+
+    /// Compare `operand` to A
+    fn cmp(&mut self, operand: u8) {
+        self.flags.set_all((self.a as u16).wrapping_sub(operand as u16), (self.a & 0xf).wrapping_sub(operand & 0xf));
+    }
+
+    fn jmp(&mut self, adr: u16) {
+        self.pc = adr;
+    }
+
+    fn call(&mut self, adr: u16) {
+        self.push(self.pc + 3);
+        self.pc = adr;
+    }
+
+    fn ret(&mut self) {
+        self.pc = self.pop();
+    }    
+
+    fn pop(&mut self) -> u16 {
+        self.sp += 2;
+        self.read_word(self.sp - 2)
+    }
+
+    fn push(&mut self, value: u16) {
+        self.sp -= 2;
+        self.write_word(self.sp, value);
+    }    
+
+    pub fn get_af(&self) -> u16 {
+        (self.a as u16) << 8 | self.flags.psw() as u16
+    }
+
+    fn set_af(&mut self, value: u16) {
+        self.flags.set_psw(value as u8);
+        self.a = (value >> 8) as u8;
+    }
+
     fn op_name(&self, address: u16) -> String {
         return match self.read_byte(address) {
             0x00 | 0x08 | 0x10 | 0x18 | 0x20 | 0x28 | 0x30 | 0x38 => "NOP".into(),
