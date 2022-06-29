@@ -1,6 +1,7 @@
 use std::{num::ParseIntError};
 
 use crate::em8080::Em8080;
+use crate::em8080::IOState;
 
 // Many (but not all) test cases are coming from
 // this old 8080 programmers manual
@@ -77,8 +78,7 @@ fn test_nop() {
     sys.memory[0x0000] = 0x00;
     println!("test_nop: {:#?}", sys);
 
-    let cycles = sys.emulate();
-    assert_eq!(cycles, 4);
+    run_op(&mut sys, "00");
     assert_eq!(sys.pc, 1);
 }
 
@@ -106,22 +106,24 @@ fn test_lxi() {
     sys.memory[0x000A] = 0x34;
     sys.memory[0x000B] = 0x12;
 
-    let cycles = sys.emulate();
+    let mut io = TestIO::new();
+
+    let cycles = sys.emulate(&mut io);
     println!("test_LXI B:\n{:#?}", sys);
     assert_eq!(sys.pc, 3);
     assert_eq!(cycles, 10);
 
-    let cycles = sys.emulate();
+    let cycles = sys.emulate(&mut io);
     println!("test_LXI D:\n{:#?}", sys);
     assert_eq!(sys.pc, 6);
     assert_eq!(cycles, 10);
 
-    let cycles = sys.emulate();
+    let cycles = sys.emulate(&mut io);
     println!("test_LXI D:\n{:#?}", sys);
     assert_eq!(sys.pc, 9);
     assert_eq!(cycles, 10);
 
-    let cycles = sys.emulate();
+    let cycles = sys.emulate(&mut io);
     println!("test_LXI D:\n{:#?}", sys);
     assert_eq!(sys.pc, 12);
     assert_eq!(cycles, 10);
@@ -143,6 +145,28 @@ pub fn decode_hex(s: &str) -> Result<Vec<u8>, ParseIntError> {
         .collect()
 }
 
+struct TestIO {
+    io : [u8; 0xFF],
+}
+
+impl IOState for TestIO {
+    fn input(&self, port: u8) -> u8 {
+        self.io[port as usize]
+    }
+
+    fn output(&mut self, port: u8, value: u8) {
+        self.io[port as usize] = value;
+    }    
+}
+
+impl TestIO {
+    pub fn new() -> Self {
+        Self {
+            io: [0; 0xFF],
+        }
+    }    
+}
+
 // Runs a single operation passed as a string of opcodes
 fn run_op(sys : &mut Em8080, command : &str) -> u64{
 
@@ -153,7 +177,9 @@ fn run_op(sys : &mut Em8080, command : &str) -> u64{
     }
     sys.pc = 0;
 
-    sys.emulate()
+    let mut io = TestIO::new();
+
+    sys.emulate(&mut io)
 }
 
 #[test]
@@ -1031,4 +1057,158 @@ fn test_cpi() {
     run_op(&mut sys, "FE40");
     assert_eq!(sys.flags.zero, false);
     assert_eq!(sys.flags.carry, false);
+}
+
+#[test]
+fn test_rnz() {
+    let mut sys = Em8080::new();
+    
+    sys.sp = 0x4000;
+    sys.push(0x1020);
+    run_op(&mut sys, "C0");
+    assert_eq!(sys.pc, 0x1020);
+}
+
+#[test]
+fn test_rnc() {
+    let mut sys = Em8080::new();
+    
+    sys.flags.carry = false;
+    sys.sp = 0x4000;
+    sys.push(0x1020);
+    run_op(&mut sys, "D0");
+    assert_eq!(sys.pc, 0x1020);
+    
+    sys.flags.carry = true;
+    run_op(&mut sys, "D0");
+    assert_eq!(sys.pc, 1);
+}
+
+#[test]
+fn test_rpo() {
+    let mut sys = Em8080::new();
+    
+    sys.flags.parity = false;
+    sys.sp = 0x4000;
+    sys.push(0x1020);
+    run_op(&mut sys, "E0");
+    assert_eq!(sys.pc, 0x1020);
+    
+    sys.flags.parity = true;
+    run_op(&mut sys, "E0");
+    assert_eq!(sys.pc, 1);
+}
+
+#[test]
+fn test_rp() {
+    let mut sys = Em8080::new();
+    
+    sys.flags.sign = false;
+    sys.sp = 0x4000;
+    sys.push(0x1020);
+    run_op(&mut sys, "F0");
+    assert_eq!(sys.pc, 0x1020);
+    
+    sys.flags.sign = true;
+    run_op(&mut sys, "F0");
+    assert_eq!(sys.pc, 1);
+}
+
+#[test]
+fn test_rz() {
+    let mut sys = Em8080::new();
+    
+    sys.flags.zero = true;
+    sys.sp = 0x4000;
+    sys.push(0x1020);
+    run_op(&mut sys, "C8");
+    assert_eq!(sys.pc, 0x1020);
+    
+    sys.flags.zero = false;
+    run_op(&mut sys, "C8");
+    assert_eq!(sys.pc, 1);
+}
+
+#[test]
+fn test_rc() {
+    let mut sys = Em8080::new();
+    
+    sys.flags.carry = true;
+    sys.sp = 0x4000;
+    sys.push(0x1020);
+    run_op(&mut sys, "D8");
+    assert_eq!(sys.pc, 0x1020);
+    
+    sys.flags.carry = false;
+    run_op(&mut sys, "D8");
+    assert_eq!(sys.pc, 1);
+}
+
+#[test]
+fn test_rpe() {
+    let mut sys = Em8080::new();
+    
+    sys.flags.parity = true;
+    sys.sp = 0x4000;
+    sys.push(0x1020);
+    run_op(&mut sys, "E8");
+    assert_eq!(sys.pc, 0x1020);
+    
+    sys.flags.parity = false;
+    run_op(&mut sys, "E8");
+    assert_eq!(sys.pc, 1);
+}
+
+#[test]
+fn test_rm() {
+    let mut sys = Em8080::new();
+    
+    sys.flags.sign = true;
+    sys.sp = 0x4000;
+    sys.push(0x1020);
+    run_op(&mut sys, "F8");
+    assert_eq!(sys.pc, 0x1020);
+    
+    sys.flags.sign = false;
+    run_op(&mut sys, "F8");
+    assert_eq!(sys.pc, 1);
+}
+
+#[test]
+fn test_pchl() {
+    let mut sys = Em8080::new();
+    
+    sys.set_hl(0x1020);
+    run_op(&mut sys, "E9");
+    assert_eq!(sys.pc, 0x1020);
+}
+
+#[test]
+fn test_jz() {
+    let mut sys = Em8080::new();
+    
+    sys.flags.zero = true;
+    run_op(&mut sys, "CA2010");
+    assert_eq!(sys.pc, 0x1020);
+
+    sys.flags.zero = false;
+    run_op(&mut sys, "CA2010");
+    assert_eq!(sys.pc, 0x3);
+}
+
+#[test]
+fn test_ldax() {
+    let mut sys = Em8080::new();
+    
+    sys.b = 0x10;
+    sys.c = 0x20;
+    sys.memory[0x1020] = 0xAA;
+    run_op(&mut sys, "0A");
+    assert_eq!(sys.a, 0xAA);
+
+    sys.d = 0x10;
+    sys.e = 0x21;
+    sys.memory[0x1021] = 0xBB;
+    run_op(&mut sys, "1A");
+    assert_eq!(sys.a, 0xBB);
 }
