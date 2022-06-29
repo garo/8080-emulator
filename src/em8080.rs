@@ -497,7 +497,7 @@ impl Em8080 {
                     (3, 10)
                 } else {
                     self.jmp(self.read_next_word());
-                    (0, 10)
+                    (3, 10)
                 }
             }
 
@@ -505,7 +505,7 @@ impl Em8080 {
             0xCA => {
                 if self.flags.zero {
                     self.jmp(self.read_next_word());
-                    (0, 10)
+                    (3, 10)
                 } else {
                     (3, 10)
                 }
@@ -515,7 +515,7 @@ impl Em8080 {
             0xDA => {
                 if self.flags.carry {
                     self.jmp(self.read_next_word());
-                    (0, 10)
+                    (3, 10)
                 } else {
                     (3, 10)
                 }
@@ -525,7 +525,7 @@ impl Em8080 {
             0xEA => {
                 if self.flags.parity {
                     self.jmp(self.read_next_word());
-                    (0, 10)
+                    (3, 10)
                 } else {
                     (3, 10)
                 }
@@ -535,7 +535,7 @@ impl Em8080 {
             0xFA => {
                 if self.flags.sign {
                     self.jmp(self.read_next_word());
-                    (0, 10)
+                    (3, 10)
                 } else {
                     (3, 10)
                 }
@@ -551,7 +551,7 @@ impl Em8080 {
             0xCC => {
                 if self.flags.zero {
                     self.call(self.read_next_word());
-                    (0, 17)
+                    (3, 17)
                 } else {
                     (3, 11)
                 }
@@ -563,7 +563,7 @@ impl Em8080 {
                     (3, 10)
                 } else {
                     self.jmp(self.read_next_word());
-                    (0, 10)
+                    (3, 10)
                 }
             }
 
@@ -573,7 +573,7 @@ impl Em8080 {
                     (3, 10)
                 } else {
                     self.jmp(self.read_next_word());
-                    (0, 10)
+                    (3, 10)
                 }
             }
 
@@ -583,21 +583,21 @@ impl Em8080 {
                     (3, 10)
                 } else {
                     self.jmp(self.read_next_word());
-                    (0, 10)
+                    (3, 10)
                 }
             }
 
             // JMP
             0xC3 | 0xCB  => {
                 self.jmp(self.read_next_word());
-                (0, 10)
+                (3, 10)
             }
 
             // CC adr
             0xDC => {
                 if self.flags.zero {
                     self.call(self.read_next_word());
-                    (0, 17)
+                    (3, 17)
                 } else {
                     (3, 11)
                 }
@@ -609,7 +609,7 @@ impl Em8080 {
                     (3, 11)
                 } else {
                     self.call(self.read_next_word());
-                    (0, 17)
+                    (3, 17)
                 }
             }
             
@@ -619,7 +619,7 @@ impl Em8080 {
                     (3, 11)
                 } else {
                     self.call(self.read_next_word());
-                    (0, 17)
+                    (3, 17)
                 }
             }
 
@@ -627,7 +627,7 @@ impl Em8080 {
             0xEC => {
                 if self.flags.parity {
                     self.call(self.read_next_word());
-                    (0, 17)
+                    (3, 17)
                 } else {
                     (3, 11)
                 }
@@ -639,7 +639,7 @@ impl Em8080 {
                     (3, 11)
                 } else {
                     self.call(self.read_next_word());
-                    (0, 17)
+                    (3, 17)
                 }
             }
 
@@ -647,7 +647,7 @@ impl Em8080 {
             0xFC => {
                 if self.flags.sign {
                     self.call(self.read_next_word());
-                    (0, 17)
+                    (3, 17)
                 } else {
                     (3, 11)
                 }
@@ -656,7 +656,7 @@ impl Em8080 {
             // CALL adr
             0xCD | 0xDD | 0xED | 0xFD => {
                 self.call(self.read_next_word());
-                (0, 17)
+                (3, 17)
             }            
 
             // CP adr
@@ -665,7 +665,7 @@ impl Em8080 {
                     (3, 11)
                 } else {
                     self.call(self.read_next_word());
-                    (0, 17)
+                    (3, 17)
                 }
             }
 
@@ -740,7 +740,7 @@ impl Em8080 {
                     (1, 5)
                 } else {
                     self.ret();
-                    (0, 11)
+                    (1, 11)
                 }
             }
 
@@ -750,7 +750,7 @@ impl Em8080 {
                     (1, 5)
                 } else {
                     self.ret();
-                    (0, 11)
+                    (1, 11)
                 }
             }
 
@@ -758,7 +758,7 @@ impl Em8080 {
             0xC8 => {
                 if self.flags.zero {
                     self.ret();
-                    (0, 11)
+                    (1, 11)
                 } else {
                     (1, 5)
                 }
@@ -768,7 +768,7 @@ impl Em8080 {
             0xD8 => {
                 if self.flags.carry {
                     self.ret();
-                    (0, 11)
+                    (1, 11)
                 } else {
                     (1, 5)
                 }
@@ -778,7 +778,7 @@ impl Em8080 {
             0xE8 => {
                 if self.flags.parity {
                     self.ret();
-                    (0, 11)
+                    (1, 11)
                 } else {
                     (1, 5)
                 }
@@ -788,7 +788,7 @@ impl Em8080 {
             0xF8 => {
                 if self.flags.sign {
                     self.ret();
-                    (0, 11)
+                    (1, 11)
                 } else {
                     (1, 5)
                 }
@@ -797,12 +797,12 @@ impl Em8080 {
             // RET
             0xC9 | 0xD9 => {
                 self.ret();
-                (0, 10)
+                (1, 10)
             }
 
             0xE9 => {
                 self.jmp(self.get_hl());
-                (0, 5)
+                (1, 5)
             }            
 
             // RST
