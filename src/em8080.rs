@@ -839,16 +839,7 @@ impl Em8080 {
                 self.set_hl(de);
                 (1, 5)
             }
-
-            // XCHG
-            0xeb => {
-                let de = self.get_de();
-                let hl = self.get_hl();
-                self.set_de(hl);
-                self.set_hl(de);
-                (1, 5)
-            }            
-
+        
             // OUT D8
             0xD3 => {
                 io_state.output(&self, self.read_next_byte(), self.a);
