@@ -15,8 +15,8 @@ const MEMORY_SIZE: usize = 0x4000;
 
 /// Interface between the emulator's IO functions and the machine state
 pub trait IOState {
-    fn input(&self, port: u8) -> u8;
-    fn output(&mut self, port: u8, value: u8);
+    fn input(&self, cpu : &Em8080, port: u8) -> u8;
+    fn output(&mut self, cpu : &Em8080, port: u8, value: u8);
 }
 
 pub struct Em8080 {
@@ -41,6 +41,8 @@ pub struct Em8080 {
 
     halted : bool,
     interrupts_enabled : bool,
+
+    trace : bool,
 }
 
 impl std::default::Default for Em8080 {
@@ -68,6 +70,7 @@ impl std::default::Default for Em8080 {
             
             halted : false,
             interrupts_enabled : true,
+            trace : false,
         }
     }
 }
@@ -107,6 +110,11 @@ impl Em8080 {
         }
     }
 
+    pub fn print_op(&mut self) {
+        let op_code = self.read_byte(self.pc);
+        println!("PC:{:04X}, SP:{:04X}. op: {:2X} ({})", self.pc, self.sp, op_code, self.op_name(self.pc));
+    }
+
     pub fn emulate(&mut self, io_state: &mut dyn IOState ) -> u64 {
         let op_code = self.read_byte(self.pc);
 
@@ -114,7 +122,9 @@ impl Em8080 {
         //    println!("{}", self);
         //}
 
-        println!("PC:{:04X}, SP:{:04X}. op: {:2X} ({})", self.pc, self.sp, op_code, self.op_name(self.pc));
+        if self.trace {
+            self.print_op();
+        }
 
         let (op_length, cycles) = match op_code {
             // NOP
@@ -595,7 +605,7 @@ impl Em8080 {
 
             // CC adr
             0xDC => {
-                if self.flags.zero {
+                if self.flags.carry {
                     self.call(self.read_next_word());
                     (3, 17)
                 } else {
@@ -841,13 +851,13 @@ impl Em8080 {
 
             // OUT D8
             0xD3 => {
-                io_state.output(self.read_next_byte(), self.a);
+                io_state.output(&self, self.read_next_byte(), self.a);
                 (2, 10)
             }            
 
             // IN D8
             0xDB => {
-                self.a = io_state.input(self.read_next_byte());
+                self.a = io_state.input(&self, self.read_next_byte());
                 (2, 10)
             }  
             
@@ -1042,6 +1052,7 @@ impl Em8080 {
     }
 
     fn jmp(&mut self, adr: u16) {
+        //println!("Jumping from {:04X} to {:04X}. Next bytes are {:02X} {:02X} {:02X} ", self.pc, adr, self.memory[adr as usize], self.memory[(adr+1) as usize], self.memory[(adr+2) as usize]);
         self.pc = adr;
     }
 
@@ -1317,7 +1328,7 @@ impl Em8080 {
             0xee => format!("XRI ${:02x}", self.read_byte(address + 1)),
             0xef => "RST 5".into(),
             0xf0 => "RP".into(),
-            0xf1 => "POP AF".into(),
+            0xf1 => "POP PSW".into(),
             0xf2 => format!("JP ${:04x}", self.read_word(address + 1)),
             0xf3 => "DI".into(),
             0xf4 => format!("CP ${:04x}", self.read_word(address + 1)),

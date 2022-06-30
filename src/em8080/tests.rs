@@ -150,11 +150,11 @@ struct TestIO {
 }
 
 impl IOState for TestIO {
-    fn input(&self, port: u8) -> u8 {
+    fn input(&self, _cpu : &Em8080, port: u8) -> u8 {
         self.io[port as usize]
     }
 
-    fn output(&mut self, port: u8, value: u8) {
+    fn output(&mut self, _cpu : &Em8080, port: u8, value: u8) {
         self.io[port as usize] = value;
     }    
 }
