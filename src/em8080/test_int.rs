@@ -81,11 +81,11 @@ impl TestIO {
 
 #[test]
 fn test_cpm_integration() {
-    let program = include_bytes!("../../test_data/TST8080.COM");
-    //let program = include_bytes!("../../test_data/8080PRE.COM");
+    //let program = include_bytes!("../../test_data/TST8080.COM");
+    let program = include_bytes!("../../test_data/8080PRE.COM");
 
     let mut sys = Em8080::from_rom(program, 0x100, 0x100);
-    
+    sys.sp = 0x4000;
     let mut io = TestIO::new();
         
     // inject "out 0,a" at 0x0000 (signal to stop the test)
@@ -98,7 +98,7 @@ fn test_cpm_integration() {
     sys.memory[0x0007] = 0xC9;
 
     let mut c : u64 = 0;
-    //sys.trace = true;
+    sys.trace = true;
     while sys.halted == false {
         c = c + 1;
 
