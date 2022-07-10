@@ -11,7 +11,7 @@ use flags::Flags;
 
 // This file borrows from https://github.com/alexandrejanin/rust-8080/tree/master/srcv
 
-const MEMORY_SIZE: usize = 0x4000;
+const MEMORY_SIZE: usize = 0xFFFF;
 
 /// Interface between the emulator's IO functions and the machine state
 pub trait IOState {
@@ -34,7 +34,7 @@ pub struct Em8080 {
     sp: u16,
     pc: u16,
 
-    memory: [u8; MEMORY_SIZE],
+    pub memory: [u8; MEMORY_SIZE],
 
     // Flags
     flags: Flags,
@@ -42,7 +42,7 @@ pub struct Em8080 {
     halted : bool,
     interrupts_enabled : bool,
 
-    trace : bool,
+    pub trace : bool,
 }
 
 impl std::default::Default for Em8080 {
@@ -410,15 +410,15 @@ impl Em8080 {
             }
 
             // INX
-            0x03 => { self.set_bc(self.get_bc() + 1); (1, 5) },
-            0x13 => { self.set_de(self.get_de() + 1); (1, 5) },
-            0x23 => { self.set_hl(self.get_hl() + 1); (1, 5) },
+            0x03 => { self.set_bc(self.get_bc().wrapping_add(1)); (1, 5) },
+            0x13 => { self.set_de(self.get_de().wrapping_add(1)); (1, 5) },
+            0x23 => { self.set_hl(self.get_hl().wrapping_add(1)); (1, 5) },
             0x33 => { self.sp += 1; (1, 5) },
 
             // DCX
-            0x0B => { self.set_bc(self.get_bc() - 1); (1, 5) },
-            0x1B => { self.set_de(self.get_de() - 1); (1, 5) },
-            0x2B => { self.set_hl(self.get_hl() - 1); (1, 5) },
+            0x0B => { self.set_bc(self.get_bc().wrapping_sub(1)); (1, 5) },
+            0x1B => { self.set_de(self.get_de().wrapping_sub(1)); (1, 5) },
+            0x2B => { self.set_hl(self.get_hl().wrapping_sub(1)); (1, 5) },
             0x3B => { self.sp -= 1; (1, 5) },
 
             // ADD
@@ -507,7 +507,7 @@ impl Em8080 {
                     (3, 10)
                 } else {
                     self.jmp(self.read_next_word());
-                    (3, 10)
+                    (0, 10)
                 }
             }
 
@@ -515,7 +515,7 @@ impl Em8080 {
             0xCA => {
                 if self.flags.zero {
                     self.jmp(self.read_next_word());
-                    (3, 10)
+                    (0, 10)
                 } else {
                     (3, 10)
                 }
@@ -525,7 +525,7 @@ impl Em8080 {
             0xDA => {
                 if self.flags.carry {
                     self.jmp(self.read_next_word());
-                    (3, 10)
+                    (0, 10)
                 } else {
                     (3, 10)
                 }
@@ -535,7 +535,7 @@ impl Em8080 {
             0xEA => {
                 if self.flags.parity {
                     self.jmp(self.read_next_word());
-                    (3, 10)
+                    (0, 10)
                 } else {
                     (3, 10)
                 }
@@ -545,7 +545,7 @@ impl Em8080 {
             0xFA => {
                 if self.flags.sign {
                     self.jmp(self.read_next_word());
-                    (3, 10)
+                    (0, 10)
                 } else {
                     (3, 10)
                 }
@@ -561,7 +561,7 @@ impl Em8080 {
             0xCC => {
                 if self.flags.zero {
                     self.call(self.read_next_word());
-                    (3, 17)
+                    (0, 17)
                 } else {
                     (3, 11)
                 }
@@ -573,7 +573,7 @@ impl Em8080 {
                     (3, 10)
                 } else {
                     self.jmp(self.read_next_word());
-                    (3, 10)
+                    (0, 10)
                 }
             }
 
@@ -583,7 +583,7 @@ impl Em8080 {
                     (3, 10)
                 } else {
                     self.jmp(self.read_next_word());
-                    (3, 10)
+                    (0, 10)
                 }
             }
 
@@ -593,21 +593,21 @@ impl Em8080 {
                     (3, 10)
                 } else {
                     self.jmp(self.read_next_word());
-                    (3, 10)
+                    (0, 10)
                 }
             }
 
             // JMP
             0xC3 | 0xCB  => {
                 self.jmp(self.read_next_word());
-                (3, 10)
+                (0, 10)
             }
 
             // CC adr
             0xDC => {
                 if self.flags.carry {
                     self.call(self.read_next_word());
-                    (3, 17)
+                    (0, 17)
                 } else {
                     (3, 11)
                 }
@@ -619,7 +619,7 @@ impl Em8080 {
                     (3, 11)
                 } else {
                     self.call(self.read_next_word());
-                    (3, 17)
+                    (0, 17)
                 }
             }
             
@@ -629,7 +629,7 @@ impl Em8080 {
                     (3, 11)
                 } else {
                     self.call(self.read_next_word());
-                    (3, 17)
+                    (0, 17)
                 }
             }
 
@@ -637,7 +637,7 @@ impl Em8080 {
             0xEC => {
                 if self.flags.parity {
                     self.call(self.read_next_word());
-                    (3, 17)
+                    (0, 17)
                 } else {
                     (3, 11)
                 }
@@ -649,7 +649,7 @@ impl Em8080 {
                     (3, 11)
                 } else {
                     self.call(self.read_next_word());
-                    (3, 17)
+                    (0, 17)
                 }
             }
 
@@ -657,7 +657,7 @@ impl Em8080 {
             0xFC => {
                 if self.flags.sign {
                     self.call(self.read_next_word());
-                    (3, 17)
+                    (0, 17)
                 } else {
                     (3, 11)
                 }
@@ -666,7 +666,7 @@ impl Em8080 {
             // CALL adr
             0xCD | 0xDD | 0xED | 0xFD => {
                 self.call(self.read_next_word());
-                (3, 17)
+                (0, 17)
             }            
 
             // CP adr
@@ -675,7 +675,7 @@ impl Em8080 {
                     (3, 11)
                 } else {
                     self.call(self.read_next_word());
-                    (3, 17)
+                    (0, 17)
                 }
             }
 
@@ -750,7 +750,7 @@ impl Em8080 {
                     (1, 5)
                 } else {
                     self.ret();
-                    (1, 11)
+                    (0, 11)
                 }
             }
 
@@ -760,7 +760,7 @@ impl Em8080 {
                     (1, 5)
                 } else {
                     self.ret();
-                    (1, 11)
+                    (0, 11)
                 }
             }
 
@@ -768,7 +768,7 @@ impl Em8080 {
             0xC8 => {
                 if self.flags.zero {
                     self.ret();
-                    (1, 11)
+                    (0, 11)
                 } else {
                     (1, 5)
                 }
@@ -778,7 +778,7 @@ impl Em8080 {
             0xD8 => {
                 if self.flags.carry {
                     self.ret();
-                    (1, 11)
+                    (0, 11)
                 } else {
                     (1, 5)
                 }
@@ -788,7 +788,7 @@ impl Em8080 {
             0xE8 => {
                 if self.flags.parity {
                     self.ret();
-                    (1, 11)
+                    (0, 11)
                 } else {
                     (1, 5)
                 }
@@ -798,7 +798,7 @@ impl Em8080 {
             0xF8 => {
                 if self.flags.sign {
                     self.ret();
-                    (1, 11)
+                    (0, 11)
                 } else {
                     (1, 5)
                 }
@@ -807,12 +807,12 @@ impl Em8080 {
             // RET
             0xC9 | 0xD9 => {
                 self.ret();
-                (1, 10)
+                (0, 10)
             }
 
             0xE9 => {
                 self.jmp(self.get_hl());
-                (1, 5)
+                (0, 5)
             }            
 
             // RST
@@ -1084,7 +1084,11 @@ impl Em8080 {
 
     pub fn load_rom(&mut self, rom: &[u8], rom_start: usize) {
         self.memory[rom_start..rom_start + rom.len()].clone_from_slice(rom);
-    }    
+    }
+
+    pub fn set_sp(&mut self, sp : u16) {
+        self.sp = sp;
+    }
 
     /// Returns the name of the instruction at the specified address in memory
     fn op_name(&self, address: u16) -> String {
